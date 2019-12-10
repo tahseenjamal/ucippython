@@ -80,6 +80,26 @@ class UcipClient:
         xml_response = response.read()
         res = client.loads(xml_response)
         return res[0][0]['responseCode']
+    
+    def update_da_balance(self, subno, daid, amount, expiry_date=None):
+        amount = amount * 100
+        isodate = client.DateTime(time.time())
+        data = client.DateTime(str(isodate) +  '+0000')   
+        dedicated_account = {'dedicatedAccountID':daid, 'adjustmentAmountRelative': str(amount)}
+        if expiry_date != None:
+            exp_date = client.DateTime(expiry_date  + '+0000')
+            dedicated_account['expiryDate'] = exp_date
+        dalist = [dedicated_account]
+        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":data, "subscriberNumberNAI":2, "subscriberNumber": subno, "transactionCurrency": "CFA",
+        'dedicatedAccountUpdateInformation': dalist}
+        xml_request = client.dumps( (params,), 'UpdateBalanceAndDate' )
+        self.headers['Content-length'] = len(xml_request)
+        self.rpcserver.request("POST","/Air", "", self.headers)
+        self.rpcserver.send(xml_request.encode())
+        response = self.rpcserver.getresponse()
+        xml_response = response.read()
+        res = client.loads(xml_response)
+        return res[0][0]['responseCode']
 
     def get_user_details(self, subno):
         dict_response = {'response':-100, 'subno':subno}
@@ -143,7 +163,6 @@ class UcipClient:
         date = client.DateTime(str(isodate) +  '+0000')
         params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":date, "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id, "offerType":offer_type}
         if expiry_date != None:
-            print('------------ Here ----------')
             if offer_type == 0:
                 params['expiryDate'] = client.DateTime(expiry_date + '+0000')
             else:
@@ -180,11 +199,17 @@ class UcipClient:
         dict_response['response'] = response_code
 
         return dict_response
+    
+
 
 if __name__ == '__main__':
     ucip = UcipClient('10.100.2.179:83', 'gprs_bundle', 'gprs+2012')
     ucip.connect()
     #r = ucip.set_offer('966601923', 317)
     #print(r)
-    r = ucip.delete_offer('966601923', 317)
+    #r = ucip.delete_offer('966601923', 317)
+    #print(r)
+    r = ucip.update_da_balance('966601923', 86, 100, '20191215T23:59:59')
     print(r)
+    # r = ucip.get_balance_date('966601923', 86)
+    # print(r)
