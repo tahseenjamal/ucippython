@@ -200,16 +200,20 @@ class UcipClient:
 
         return dict_response
     
+    def update_tempblock(self, subno, flag=True):
+        dict_response = {'response':-100, 'subno':subno}
+        isodate = client.DateTime(time.time())
+        data = client.DateTime(str(isodate) +  '+0000')
+        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":data, "subscriberNumberNAI":2, "subscriberNumber": subno,
+        'temporaryBlockedFlag': flag}
+        xml_request = client.dumps( (params,), 'UpdateTemporaryBlocked' )
+        self.headers['Content-length'] = len(xml_request)
+        self.rpcserver.request("POST","/Air", "", self.headers)
+        self.rpcserver.send(xml_request.encode())
+        response = self.rpcserver.getresponse()
+        xml_response = response.read()
+        res = client.loads(xml_response)
+        dict_response['response'] = int(res[0][0]['responseCode'])
+    
+        return dict_response
 
-
-if __name__ == '__main__':
-    ucip = UcipClient('10.100.2.179:83', 'gprs_bundle', 'gprs+2012')
-    ucip.connect()
-    #r = ucip.set_offer('966601923', 317)
-    #print(r)
-    #r = ucip.delete_offer('966601923', 317)
-    #print(r)
-    r = ucip.update_da_balance('966601923', 86, 100, '20191215T23:59:59')
-    print(r)
-    # r = ucip.get_balance_date('966601923', 86)
-    # print(r)
