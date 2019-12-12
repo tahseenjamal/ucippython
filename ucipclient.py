@@ -8,21 +8,26 @@ import time
 class UcipClient:
 
     def __init__(self, host, username, password):
+        credential = f'{username}:{password}'
+        auth =  base64.standard_b64encode(credential.encode())
         self.host = host
         self.username = username
         self.password = password
-        credential = f'{username}:{password}'
-        auth =  base64.standard_b64encode(credential.encode())
+        self.rpcserver = None
         self.headers = {"Host": "10.100.2.179:83", "User-Agent": "GPRSBUNDLE/4.0/1.0", "Content-type": "text/xml; charset=\"UTF-8\"", "Content-length": 0, "Connection": "Close", "Authorization":"Basic %s" % auth}
 
+
     def connect(self):
-        self.rpcserver = http.client.HTTPConnection("10.100.2.179:83")
+        if self.rpcserver == None:
+            self.rpcserver = http.client.HTTPConnection("10.100.2.179:83")
+
 
     def get_da_amount(self, das, daid):
         for da in das:
             if da['dedicatedAccountID'] == daid:
                 return int(da['dedicatedAccountValue1'])/100
         return -1
+
 
     def get_da_amount2(self, das, daid):
         """
@@ -47,18 +52,24 @@ class UcipClient:
         return elem
     
 
-    def get_balance_date(self, subno, ded_account_id=2):
-        dict_response = {'response':-100, 'subno':subno}
-        isodate = client.DateTime(time.time())
-        data = client.DateTime(str(isodate) +  '+0000')
-        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":data, "subscriberNumberNAI":2, "subscriberNumber": subno}
-        xml_request = client.dumps( (params,), 'GetBalanceAndDate' )
+    def run_rpc_command(self, params, method):
+        xml_request = client.dumps( (params,), method )
         self.headers['Content-length'] = len(xml_request)
         self.rpcserver.request("POST","/Air", "", self.headers)
         self.rpcserver.send(xml_request.encode())
-        response = self.rpcserver.getresponse()
-        xml_response = response.read()
-        res = client.loads(xml_response)
+        rpc_response = self.rpcserver.getresponse()
+        xml_response = rpc_response.read()
+        response = client.loads(xml_response)
+        return response
+
+
+    def get_balance_date(self, subno, ded_account_id=2):
+        dict_response = {'response':-100, 'subno':subno}
+        isodatetimetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetimetime) +  '+0000')
+        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+            "subscriberNumberNAI":2, "subscriberNumber": subno}
+        res = self.run_rpc_command(params, 'GetBalanceAndDate')
         response_code = int(res[0][0]['responseCode'])
         dict_response['response'] = response_code
         if response_code == 0 :
@@ -67,52 +78,39 @@ class UcipClient:
             dict_response['da'] = int(davalue)
         return dict_response
     
+
     def update_balance_date(self, subno, amount):
         amount = amount * 100
-        isodate = client.DateTime(time.time())
-        data = client.DateTime(str(isodate) +  '+0000')
-        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":data, "subscriberNumberNAI":2, "subscriberNumber": subno, "adjustmentAmountRelative": str(amount), "transactionCurrency": "CFA"}
-        xml_request = client.dumps( (params,), 'UpdateBalanceAndDate' )
-        self.headers['Content-length'] = len(xml_request)
-        self.rpcserver.request("POST","/Air", "", self.headers)
-        self.rpcserver.send(xml_request.encode())
-        response = self.rpcserver.getresponse()
-        xml_response = response.read()
-        res = client.loads(xml_response)
+        isodatetimetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetimetime) +  '+0000')
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+            "subscriberNumberNAI":2, "subscriberNumber": subno, "adjustmentAmountRelative": str(amount), "transactionCurrency": "CFA"}
+        res = self.run_rpc_command(parameters, 'UpdateBalanceAndDate')
         return res[0][0]['responseCode']
     
+
     def update_da_balance(self, subno, daid, amount, expiry_date=None):
         amount = amount * 100
-        isodate = client.DateTime(time.time())
-        data = client.DateTime(str(isodate) +  '+0000')   
+        isodatetimetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetimetime) +  '+0000')   
         dedicated_account = {'dedicatedAccountID':daid, 'adjustmentAmountRelative': str(amount)}
         if expiry_date != None:
             exp_date = client.DateTime(expiry_date  + '+0000')
             dedicated_account['expiryDate'] = exp_date
         dalist = [dedicated_account]
-        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":data, "subscriberNumberNAI":2, "subscriberNumber": subno, "transactionCurrency": "CFA",
-        'dedicatedAccountUpdateInformation': dalist}
-        xml_request = client.dumps( (params,), 'UpdateBalanceAndDate' )
-        self.headers['Content-length'] = len(xml_request)
-        self.rpcserver.request("POST","/Air", "", self.headers)
-        self.rpcserver.send(xml_request.encode())
-        response = self.rpcserver.getresponse()
-        xml_response = response.read()
-        res = client.loads(xml_response)
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+            "subscriberNumberNAI":2, "subscriberNumber": subno, "transactionCurrency": "CFA",'dedicatedAccountUpdateInformation': dalist}
+        res = self.run_rpc_command(parameters, 'UpdateBalanceAndDate')
         return res[0][0]['responseCode']
+
 
     def get_user_details(self, subno):
         dict_response = {'response':-100, 'subno':subno}
-        isodate = client.DateTime(time.time())
-        data = client.DateTime(str(isodate) +  '+0000')
-        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":data, "subscriberNumberNAI":2, "subscriberNumber": subno}
-        xml_request = client.dumps( (params,), 'GetAccountDetails' )
-        self.headers['Content-length'] = len(xml_request)
-        self.rpcserver.request("POST","/Air", "", self.headers)
-        self.rpcserver.send(xml_request.encode())
-        response = self.rpcserver.getresponse()
-        xml_response = response.read()
-        res = client.loads(xml_response)
+        isodatetimetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetimetime) +  '+0000')
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+            "subscriberNumberNAI":2, "subscriberNumber": subno}
+        res = self.run_rpc_command(parameters, 'GetAccountDetails')
         response_code = int(res[0][0]['responseCode'])
         dict_response['response'] = response_code
         if response_code == 0 :
@@ -123,20 +121,16 @@ class UcipClient:
                 dict_response['activationDate'] = res[0][0]['activationDate']
         return dict_response
 
+    
     def get_offers(self, subno):
         dict_response = {'response':-100, 'subno':subno}
-        isodate = client.DateTime(time.time())
-        date = client.DateTime(str(isodate) +  '+0000')
-        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":date, "offerRequestedTypeFlag": "11111111", "subscriberNumberNAI":2, "subscriberNumber": subno}
-        xml_request = client.dumps( (params,), 'GetOffers' )
+        isodatetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetime) +  '+0000')
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+            "offerRequestedTypeFlag": "11111111", "subscriberNumberNAI":2, "subscriberNumber": subno}
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
-        self.headers['Content-length'] = len(xml_request)
-        self.rpcserver.request("POST","/Air", "", self.headers)
-        self.rpcserver.send(xml_request.encode())
-        response = self.rpcserver.getresponse()
-        xml_response = response.read()
+        res = self.run_rpc_command(parameters, 'GetOffers')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0'
-        res = client.loads(xml_response)
         response_code = int(res[0][0]['responseCode'])
         dict_response['response'] = response_code
         offers = []
@@ -157,63 +151,46 @@ class UcipClient:
         dict_response['offers'] = offers
         return dict_response
 
+    
     def set_offer(self, subno, offer_id, offer_type=0, expiry_date=None):
         dict_response = {'response':-100, 'subno':subno}
-        isodate = client.DateTime(time.time())
-        date = client.DateTime(str(isodate) +  '+0000')
-        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":date, "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id, "offerType":offer_type}
+        isodatetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetime) +  '+0000')
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate, "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id, "offerType":offer_type}
         if expiry_date != None:
             if offer_type == 0:
-                params['expiryDate'] = client.DateTime(expiry_date + '+0000')
+                parameters['expiryDate'] = client.DateTime(expiry_date + '+0000')
             else:
-                params['expiryDateTime'] = client.DateTime(expiry_date  + '+0000')
-        xml_request = client.dumps( (params,), 'UpdateOffer' )
+                parameters['expiryDateTime'] = client.DateTime(expiry_date  + '+0000')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
-        self.headers['Content-length'] = len(xml_request)
-        self.rpcserver.request("POST","/Air", "", self.headers)
-        self.rpcserver.send(xml_request.encode())
-        response = self.rpcserver.getresponse()
-        xml_response = response.read()
+        res = self.run_rpc_command(parameters, 'UpdateOffer')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0'
-        res = client.loads(xml_response)
         response_code = int(res[0][0]['responseCode'])
         dict_response['response'] = response_code
-
         return dict_response
+    
     
     def delete_offer(self, subno, offer_id):
         dict_response = {'response':-100, 'subno':subno}
-        isodate = client.DateTime(time.time())
-        date = client.DateTime(str(isodate) +  '+0000')
-        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":date, "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id}
-        xml_request = client.dumps( (params,), 'DeleteOffer' )
+        isodatetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetime) +  '+0000')
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+            "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id}
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
-        self.headers['Content-length'] = len(xml_request)
-        self.rpcserver.request("POST","/Air", "", self.headers)
-        self.rpcserver.send(xml_request.encode())
-        response = self.rpcserver.getresponse()
-        xml_response = response.read()
+        res = self.run_rpc_command(parameters, 'DeleteOffer')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0'
-        res = client.loads(xml_response)
         response_code = int(res[0][0]['responseCode'])
         dict_response['response'] = response_code
-
         return dict_response
+    
     
     def update_tempblock(self, subno, flag=True):
         dict_response = {'response':-100, 'subno':subno}
-        isodate = client.DateTime(time.time())
-        data = client.DateTime(str(isodate) +  '+0000')
-        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":data, "subscriberNumberNAI":2, "subscriberNumber": subno,
-        'temporaryBlockedFlag': flag}
-        xml_request = client.dumps( (params,), 'UpdateTemporaryBlocked' )
-        self.headers['Content-length'] = len(xml_request)
-        self.rpcserver.request("POST","/Air", "", self.headers)
-        self.rpcserver.send(xml_request.encode())
-        response = self.rpcserver.getresponse()
-        xml_response = response.read()
-        res = client.loads(xml_response)
+        isodatetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetime) +  '+0000')
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+            "subscriberNumberNAI":2, "subscriberNumber": subno, 'temporaryBlockedFlag': flag}
+        res = self.run_rpc_command(parameters, 'UpdateTemporaryBlocked')
         dict_response['response'] = int(res[0][0]['responseCode'])
-    
         return dict_response
 
