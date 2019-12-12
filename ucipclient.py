@@ -20,6 +20,7 @@ class UcipClient:
     def connect(self):
         if self.rpcserver == None:
             self.rpcserver = http.client.HTTPConnection("10.100.2.179:83")
+            
 
 
     def get_da_amount(self, das, daid):
@@ -53,13 +54,18 @@ class UcipClient:
     
 
     def run_rpc_command(self, params, method):
-        xml_request = client.dumps( (params,), method )
-        self.headers['Content-length'] = len(xml_request)
-        self.rpcserver.request("POST","/Air", "", self.headers)
-        self.rpcserver.send(xml_request.encode())
-        rpc_response = self.rpcserver.getresponse()
-        xml_response = rpc_response.read()
-        response = client.loads(xml_response)
+        response = None
+        try:
+            xml_request = client.dumps( (params,), method )
+            self.headers['Content-length'] = len(xml_request)
+            self.rpcserver.request("POST","/Air", "", self.headers)
+            self.rpcserver.send(xml_request.encode())
+            rpc_response = self.rpcserver.getresponse()
+            xml_response = rpc_response.read()
+            print(xml_response)
+            response = client.loads(xml_response)
+        except client.Fault as e:
+            print("There is an error. FaultError: {}, FaultString: {}".format(e.faultCode, e.faultString))
         return response
 
 
@@ -70,7 +76,7 @@ class UcipClient:
         params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
             "subscriberNumberNAI":2, "subscriberNumber": subno}
         res = self.run_rpc_command(params, 'GetBalanceAndDate')
-        response_code = int(res[0][0]['responseCode'])
+        response_code = res[0][0]['responseCode']
         dict_response['response'] = response_code
         if response_code == 0 :
             dict_response['ma'] =  int(res[0][0]['accountValue1'])/100
@@ -111,7 +117,7 @@ class UcipClient:
         parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
             "subscriberNumberNAI":2, "subscriberNumber": subno}
         res = self.run_rpc_command(parameters, 'GetAccountDetails')
-        response_code = int(res[0][0]['responseCode'])
+        response_code = res[0][0]['responseCode']
         dict_response['response'] = response_code
         if response_code == 0 :
             dict_response['sc'] = res[0][0]['serviceClassCurrent']
@@ -131,7 +137,7 @@ class UcipClient:
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
         res = self.run_rpc_command(parameters, 'GetOffers')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0' # Turn to default
-        response_code = int(res[0][0]['responseCode'])
+        response_code = res[0][0]['responseCode']
         dict_response['response'] = response_code
         offers = []
         offer_type = - 1
@@ -165,8 +171,7 @@ class UcipClient:
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
         res = self.run_rpc_command(parameters, 'UpdateOffer')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0' # Turn to default
-        response_code = int(res[0][0]['responseCode'])
-        dict_response['response'] = response_code
+        dict_response['response'] = res[0][0]['responseCode']
         return dict_response
     
     
@@ -179,8 +184,7 @@ class UcipClient:
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
         res = self.run_rpc_command(parameters, 'DeleteOffer')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0' # Turn to default
-        response_code = int(res[0][0]['responseCode'])
-        dict_response['response'] = response_code
+        dict_response['response'] = res[0][0]['responseCode']
         return dict_response
     
     
@@ -191,6 +195,7 @@ class UcipClient:
         parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
             "subscriberNumberNAI":2, "subscriberNumber": subno, 'temporaryBlockedFlag': flag}
         res = self.run_rpc_command(parameters, 'UpdateTemporaryBlocked')
-        dict_response['response'] = int(res[0][0]['responseCode'])
+        
+        dict_response['response'] = res[0][0]['responseCode']
         return dict_response
 
