@@ -3,25 +3,30 @@ import http.client
 import base64
 import datetime
 import time
+import os
+from requests.exceptions import ConnectionError
 
 
 class UcipClient:
 
-    def __init__(self, host, username, password):
+    def __init__(self, hostport, username, password):
         credential = f'{username}:{password}'
         auth =  base64.standard_b64encode(credential.encode())
-        self.host = host
+        self.hostport = hostport
         self.username = username
         self.password = password
         self.rpcserver = None
-        self.headers = {"Host": "10.100.2.179:83", "User-Agent": "GPRSBUNDLE/4.0/1.0", "Content-type": "text/xml; charset=\"UTF-8\"", "Content-length": 0, "Connection": "Close", "Authorization":"Basic %s" % auth}
+        self.headers = {"Host": self.hostport, "User-Agent": "GPRSBUNDLE/4.0/1.0", "Content-type": "text/xml; charset=\"UTF-8\"", "Content-length": 0, "Connection": "Close", "Authorization":"Basic %s" % auth}
 
 
     def connect(self):
         if self.rpcserver == None:
-            self.rpcserver = http.client.HTTPConnection("10.100.2.179:83")
-            
-
+            try:
+                self.rpcserver = http.client.HTTPConnection(self.hostport, timeout=5)
+            except http.client.HTTPException as e:
+                print(e)
+        
+        
 
     def get_da_amount(self, das, daid):
         for da in das:
@@ -62,7 +67,6 @@ class UcipClient:
             self.rpcserver.send(xml_request.encode())
             rpc_response = self.rpcserver.getresponse()
             xml_response = rpc_response.read()
-            print(xml_response)
             response = client.loads(xml_response)
         except client.Fault as e:
             print("There is an error. FaultError: {}, FaultString: {}".format(e.faultCode, e.faultString))
