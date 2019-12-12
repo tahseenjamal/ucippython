@@ -130,7 +130,7 @@ class UcipClient:
             "offerRequestedTypeFlag": "11111111", "subscriberNumberNAI":2, "subscriberNumber": subno}
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
         res = self.run_rpc_command(parameters, 'GetOffers')
-        self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0'
+        self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0' # Turn to default
         response_code = int(res[0][0]['responseCode'])
         dict_response['response'] = response_code
         offers = []
@@ -164,7 +164,7 @@ class UcipClient:
                 parameters['expiryDateTime'] = client.DateTime(expiry_date  + '+0000')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
         res = self.run_rpc_command(parameters, 'UpdateOffer')
-        self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0'
+        self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0' # Turn to default
         response_code = int(res[0][0]['responseCode'])
         dict_response['response'] = response_code
         return dict_response
@@ -178,7 +178,7 @@ class UcipClient:
             "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id}
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
         res = self.run_rpc_command(parameters, 'DeleteOffer')
-        self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0'
+        self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0' # Turn to default
         response_code = int(res[0][0]['responseCode'])
         dict_response['response'] = response_code
         return dict_response
