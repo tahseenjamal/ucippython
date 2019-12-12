@@ -1,3 +1,7 @@
+# Author: Everaldo Ailton Sariot Menout
+# Description: UCIP client to connect to AIR using xml over RPC
+# License: Public Domain
+
 import xmlrpc.client as client
 import http.client
 import base64
