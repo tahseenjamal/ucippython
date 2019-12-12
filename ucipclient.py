@@ -146,18 +146,19 @@ class UcipClient:
         offers = []
         offer_type = - 1
         if response_code == 0 :
-            for offer in res[0][0]['offerInformation']:
-                dict_offers = {}
-                offer_type = offer['offerType']
-                dict_offers['offerType'] =  offer_type
-                dict_offers['offerId'] =  offer['offerID']
-                if offer_type == 2:
-                    dict_offers['startDate'] =  offer['startDateTime']
-                    dict_offers['expiryDate'] =  offer['expiryDateTime']
-                else:
-                    dict_offers['startDate'] =  offer['startDate']
-                    dict_offers['expiryDate'] =  offer['expiryDate']
-                offers.append(dict_offers)
+            if 'offerInformation' in res[0][0]:
+                for offer in res[0][0]['offerInformation']:
+                    dict_offers = {}
+                    offer_type = offer['offerType']
+                    dict_offers['offerType'] =  offer_type
+                    dict_offers['offerId'] =  offer['offerID']
+                    if offer_type == 2:
+                        dict_offers['startDate'] =  offer['startDateTime']
+                        dict_offers['expiryDate'] =  offer['expiryDateTime']
+                    else:
+                        dict_offers['startDate'] =  offer['startDate']
+                        dict_offers['expiryDate'] =  offer['expiryDate']
+                    offers.append(dict_offers)
         dict_response['offers'] = offers
         return dict_response
 
@@ -202,4 +203,12 @@ class UcipClient:
         
         dict_response['response'] = res[0][0]['responseCode']
         return dict_response
+
+    def delete_all_offers(self, subno):
+        offer_dict = self.get_offers(subno)
+        result = -1
+        for offer in offer_dict['offers']:
+            result = self.delete_offer(offer_dict['subno'], offer['offerId'])
+            print("subno ={} , offerID={} , offerType={} - responseCode={}".format(offer_dict['subno'], offer['offerId'], offer['offerType'], result['response']))
+
 
