@@ -21,4 +21,6 @@ if __name__ == '__main__':
     # print(r)
     # r = ucip.update_tempblock('966601923', False)
     # print(r)
-    ucip.delete_all_offers('966601423')
+    #ucip.delete_all_offers('966601423')
+    r = ucip.set_offer('966601917', 362)
+    print(r)
