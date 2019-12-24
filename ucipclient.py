@@ -66,6 +66,7 @@ class UcipClient:
         response = None
         try:
             xml_request = client.dumps( (params,), method )
+            #print(params)
             self.headers['Content-length'] = len(xml_request)
             self.rpcserver.request("POST","/Air", "", self.headers)
             self.rpcserver.send(xml_request.encode())
@@ -93,12 +94,18 @@ class UcipClient:
         return dict_response
     
 
-    def update_balance_date(self, subno, amount):
-        amount = amount * 100
+    def update_balance_date(self, subno, amount, isabsolute=False):
+        if type(amount) != float and type(amount) != int:
+            raise ValueError("amount should be an int or float. A string was passed instead.")
+        amount = round(amount*100)
         isodatetimetime = client.DateTime(time.time())
         transdate = client.DateTime(str(isodatetimetime) +  '+0000')
         parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
-            "subscriberNumberNAI":2, "subscriberNumber": subno, "adjustmentAmountRelative": str(amount), "transactionCurrency": "CFA"}
+            "subscriberNumberNAI":2, "subscriberNumber": subno, "transactionCurrency": "CFA"}
+        if isabsolute:
+            parameters['mainAccountValueNew'] = str(amount)
+        else:
+            parameters['adjustmentAmountRelative'] = str(amount)
         res = self.run_rpc_command(parameters, 'UpdateBalanceAndDate')
         return res[0][0]['responseCode']
     
@@ -214,5 +221,27 @@ class UcipClient:
         for offer in offer_dict['offers']:
             result = self.delete_offer(offer_dict['subno'], offer['offerId'])
             print("subno ={} , offerID={} , offerType={} - responseCode={}".format(offer_dict['subno'], offer['offerId'], offer['offerType'], result['response']))
+        
+    
+    def install_subscriber_sdp(self, subno, serv_class, is_blocked):
+        dict_response = {'response':-100, 'subno':subno}
+        isodatetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetime) +  '+0000')
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+            "subscriberNumberNAI":2, "subscriberNumber": subno, "originOperatorID":"EveraldoMenout", "serviceClassNew": serv_class , 'temporaryBlockedFlag': is_blocked}
+        res = self.run_rpc_command(parameters, 'InstallSubscriber')
+        dict_response['response'] = res[0][0]['responseCode']
+        return dict_response
+    
 
+    def delete_subscriber_sdp(self, subno):
+        dict_response = {'response':-100, 'subno':subno}
+        isodatetime = client.DateTime(time.time())
+        transdate = client.DateTime(str(isodatetime) +  '+0000')
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+            "subscriberNumberNAI":2, "subscriberNumber": subno, "originOperatorID":"EveraldoMenout"}
+        res = self.run_rpc_command(parameters, 'DeleteSubscriber')
+        dict_response['response'] = res[0][0]['responseCode']
+        return dict_response
 
+    

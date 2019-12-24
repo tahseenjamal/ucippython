@@ -22,5 +22,14 @@ if __name__ == '__main__':
     # r = ucip.update_tempblock('966601923', False)
     # print(r)
     #ucip.delete_all_offers('966601423')
-    r = ucip.set_offer('966601917', 362)
+    #numbers = ['966273333']
+    #numbers = ['966171396']
+    # for num in numbers:
+    #     #r = ucip.update_balance_date(num, 100, True)
+    #     r = ucip.get_balance_date(num)
+    #     print('MA = ', r['ma'])
+    #     #rr = ucip.update_balance_date(r['subno'], - r['ma'], False)
+    #     #print(rr)
+    #r = ucip.install_subscriber_sdp('966000000', 301, True)
+    r = ucip.delete_subscriber_sdp('966000000')
     print(r)
