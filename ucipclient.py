@@ -26,7 +26,7 @@ class UcipClient:
     def connect(self):
         if self.rpcserver == None:
             try:
-                self.rpcserver = http.client.HTTPConnection(self.hostport, timeout=5)
+                self.rpcserver = http.client.HTTPConnection(self.hostport, timeout=25)
             except http.client.HTTPException as e:
                 print(e)
         
