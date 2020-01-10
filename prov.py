@@ -5,9 +5,9 @@ import sys
 parser = argparse.ArgumentParser()
 # Add the arguments to the parser
 parser.add_argument("-m", "--method_id", type=int, required=False,
-   help="first operand")
+   help="method id")
 parser.add_argument("-p", "--parameters", required=False,
-   help="second operand")
+   help="list parameters separated by comma")
 parser.add_argument("-l", action='store_true', help="List methods")
 args = vars (parser.parse_args())
 
