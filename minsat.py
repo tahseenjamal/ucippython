@@ -10,6 +10,8 @@ class Minsat:
         self.minsat.connect(self.ip_port)
 
     def send_command(self, cmd):
+        if cmd[-1] != ';':
+            cmd += ';'
         cmd += "\r\n"
         self.minsat.send(bytes(cmd.encode()))
         final_response = ''
@@ -23,10 +25,7 @@ class Minsat:
     
     def login(self, username, password):
         reply = self.send_command(f'LOGIN:{username}:{password};')
-        if reply != None:
-            resp_code = int(reply.split(':')[1].strip()[0])
-            return resp_code == 0
-        return False
+        return reply.startswith("RESP:0")
 
     def logout(self):
         self.send_command('LOGOUT;')
@@ -43,4 +42,6 @@ if __name__ == '__main__':
             'GET:ACCOUNTINFORMATION:2:SubscriberNumber,245966002971;')
         print(reply, end='')
         server.close()
+    else:
+        print("You're not connect to " + str(server.ip_port))
 
