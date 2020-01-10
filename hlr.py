@@ -30,7 +30,7 @@ class Hlr:
 
 
     def close(self):
-        rr = self.send_command("EXIT;")
+        self.send_command("EXIT;")
         self.telnet.close()
 
 

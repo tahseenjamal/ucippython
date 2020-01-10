@@ -7,10 +7,16 @@ client = zeep.Client(wsdl=wsdl)
 
 order_type = client.get_type('ns0:AnyMOIdType')
 print(order_type)
-AnyMOIdType  = order_type(_value_1="cai3g")
-print(AnyMOIdType)
-MOType =  xsd.Element('Username', xsd.String())
-print(MOType)
+el = client.get_element('ns0:CreateMODefinition')
+dir(el)
+
+# factory = client.type_factory('ns0')
+# dir(factory)
+
+# AnyMOIdType  = order_type(_value_1="cai3g")
+# print(AnyMOIdType)
+# MOType =  xsd.Element('Username', xsd.String())
+# print('teste', MOType)
 #Create(MOType: xsd:string, MOId: ns0:AnyMOIdType, MOAttributes: ns0:CreateMODefinition, extension: ns0:AnySequenceType, _soapheaders={SessionId: xsd:string, TransactionId: xsd:string, SequenceId: xsd:integer})
 
 
