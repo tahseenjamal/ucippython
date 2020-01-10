@@ -22,7 +22,7 @@ if __name__ == '__main__':
     ucip.connect()
     #r = ucip.get_balance_date('966601471')
     #print(r)
-    r  = ucip.get_offers('966601445')
+    r  = ucip.get_offers('966363636')
     print(r)
     # r = ucip.set_offer('966601923', 317)
     # print(r)

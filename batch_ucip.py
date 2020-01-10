@@ -16,8 +16,10 @@ if __name__ == '__main__':
     numbers = get_numbers()
     ucip = ucipclient.UcipClient('10.100.2.179:83', 'gprs_bundle', 'gprs+2012')
     ucip.connect()
-    res = None
-    for msisdn in numbers:
-        r = ucip.install_subscriber_sdp(msisdn, 400, False)
-        print(r)
+    print (ucip.set_offer('966363636', 645, 2, '20200110T23:59:59'))
+    # res = None
+    # for msisdn in numbers:
+    #     r = ucip.install_subscriber_sdp(msisdn, 400, False)
+    #     print(r)
+    
 

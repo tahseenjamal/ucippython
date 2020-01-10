@@ -10,6 +10,11 @@ import time
 import os
 from requests.exceptions import ConnectionError
 
+OfferTypes = {
+    'NORMAL' : 0,
+    'TIMER'  : 2,
+    'SHARED' : 3
+    }
 
 class UcipClient:
 
@@ -163,7 +168,7 @@ class UcipClient:
                     offer_type = offer['offerType']
                     dict_offers['offerType'] =  offer_type
                     dict_offers['offerId'] =  offer['offerID']
-                    if offer_type == 2:
+                    if offer_type == OfferTypes['TIMER']:
                         dict_offers['startDate'] =  offer['startDateTime']
                         dict_offers['expiryDate'] =  offer['expiryDateTime']
                     else:
@@ -180,7 +185,7 @@ class UcipClient:
         transdate = client.DateTime(str(isodatetime) +  '+0000')
         parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate, "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id, "offerType":offer_type}
         if expiry_date != None:
-            if offer_type == 0:
+            if offer_type == OfferTypes['NORMAL']:
                 parameters['expiryDate'] = client.DateTime(expiry_date + '+0000')
             else:
                 parameters['expiryDateTime'] = client.DateTime(expiry_date  + '+0000')
