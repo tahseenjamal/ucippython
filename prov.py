@@ -63,7 +63,8 @@ elif method_id == 8:
      print(ucip.delete_subscriber_sdp(params[0]))
 elif method_id == 9:
     if len_args == 2:
-        print(ucip.update_tempblock(params[0], bool(params[1])))
+        flag = True if params[1] == 'true' else False
+        print(ucip.update_tempblock(params[0], flag))
     else:
         print('Parameter syntax error : <subno,flag> expected')
 else:
