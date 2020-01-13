@@ -136,7 +136,7 @@ class UcipClient:
             dict_response['languageId'] = res[0][0]['languageIDCurrent']
             dict_response['isActive'] = res[0][0]['accountFlags']['activationStatusFlag']
             if (dict_response['isActive']):
-                dict_response['activationDate'] = res[0][0]['activationDate']
+                dict_response['activationDate'] = res[0][0]['activationDate'].value
             else:
                 dict_response['tempBlock'] = res[0][0]['temporaryBlockedFlag']
 
@@ -161,11 +161,11 @@ class UcipClient:
                     dict_offers['offerType'] =  offer_type
                     dict_offers['offerId'] =  offer['offerID']
                     if offer_type == OfferTypes['TIMER']:
-                        dict_offers['startDate'] =  offer['startDateTime']
-                        dict_offers['expiryDate'] =  offer['expiryDateTime']
+                        dict_offers['startDate'] =  offer['startDateTime'].value
+                        dict_offers['expiryDate'] =  offer['expiryDateTime'].value
                     else:
-                        dict_offers['startDate'] =  offer['startDate']
-                        dict_offers['expiryDate'] =  offer['expiryDate']
+                        dict_offers['startDate'] =  offer['startDate'].value
+                        dict_offers['expiryDate'] =  offer['expiryDate'].value
                     offers.append(dict_offers)
         dict_response['offers'] = offers
         return dict_response

@@ -12,7 +12,10 @@ parser.add_argument("-p", "--parameters", required=False,
 parser.add_argument("-l", action='store_true', help="List methods")
 args = vars (parser.parse_args())
 
-if  (not args['method_id'] and args['parameters']) or (args['method_id'] and not args['parameters']):
+if len(sys.argv) <= 1:
+     parser.error("No parameter provided")
+
+elif  (not args['method_id'] and args['parameters']) or (args['method_id'] and not args['parameters']):
      parser.error('The - [method_id] and [parameters] should be provided')
 
 if (args['l'] == True):
@@ -37,7 +40,15 @@ len_args = len(params)
 if method_id == 1:
      print(ucip.get_user_details(params[0]))
 elif method_id == 2:
-    print(ucip.get_offers(params[0]))
+    result = ucip.get_offers(params[0])
+    if result['response'] == 0:
+        print("\nSubno: ", result['subno'])
+        print(f"{'offerId':<7} {'offerType':<9} {'startDate':<22} {'expiryDate':<22}")
+        print('-'*63)
+        for offer in result['offers']:
+            print(f"{offer['offerId']:<7} {offer['offerType']:<9} {offer['startDate']:<22} {offer['expiryDate']:<22}")
+    else:
+        print("Error. Response code:",result['response'])
 elif method_id == 3:
     print(ucip.get_balance_date(params[0], int(params[1])))
 elif method_id == 4:
