@@ -56,7 +56,8 @@ elif method_id == 6:
         print('Parameter syntax error: <subno,offer_id,expiry_date> expected')
 elif method_id == 7:
     if len_args == 3:
-        print(ucip.install_subscriber_sdp(params[0], int(params[1]), bool(params[2]) ))
+        flag = True if params[2] == 'true' else False
+        print(ucip.install_subscriber_sdp(params[0], int(params[1]), flag ))
     else:
         print('Parameter syntax error : <subno,serv_class,flag_temp_block> expected')
 elif method_id == 8:

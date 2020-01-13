@@ -41,6 +41,12 @@ if __name__ == '__main__':
         reply = server.send_command(
             'GET:ACCOUNTINFORMATION:2:SubscriberNumber,245966002971;')
         print(reply, end='')
+        reply = server.send_command(
+            'GET:ACCOUNTINFORMATION:2:SubscriberNumber,245966601471;')
+        print(reply, end='')
+        reply = server.send_command(
+            'GET:ACCOUNTINFORMATION:2:SubscriberNumber,245966601771;')
+        print(reply, end='')
         server.close()
     else:
         print("You're not connect to " + str(server.ip_port))
