@@ -70,6 +70,9 @@ class UcipClient:
     def run_rpc_command(self, params, method):
         response = None
         try:
+            isodatetimetime = client.DateTime(time.time())
+            transdate = client.DateTime(str(isodatetimetime) +  '+0000')
+            params["originTimeStamp"] = transdate
             xml_request = client.dumps( (params,), method )
             #print(params)
             self.headers['Content-length'] = len(xml_request)
@@ -85,10 +88,7 @@ class UcipClient:
 
     def get_balance_date(self, subno, ded_account_id=2):
         dict_response = {'response':-100, 'subno':subno}
-        isodatetimetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetimetime) +  '+0000')
-        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
-            "subscriberNumberNAI":2, "subscriberNumber": subno}
+        params =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455","subscriberNumberNAI":2, "subscriberNumber": subno}
         res = self.run_rpc_command(params, 'GetBalanceAndDate')
         response_code = res[0][0]['responseCode']
         dict_response['response'] = response_code
@@ -103,10 +103,7 @@ class UcipClient:
         if type(amount) != float and type(amount) != int:
             raise ValueError("amount should be an int or float. A string was passed instead.")
         amount = round(amount*100)
-        isodatetimetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetimetime) +  '+0000')
-        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
-            "subscriberNumberNAI":2, "subscriberNumber": subno, "transactionCurrency": "CFA"}
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "subscriberNumberNAI":2, "subscriberNumber": subno, "transactionCurrency": "CFA"}
         if isabsolute:
             parameters['mainAccountValueNew'] = str(amount)
         else:
@@ -116,15 +113,13 @@ class UcipClient:
     
 
     def update_da_balance(self, subno, daid, amount, expiry_date=None):
-        amount = amount * 100
-        isodatetimetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetimetime) +  '+0000')   
+        amount = amount * 100 
         dedicated_account = {'dedicatedAccountID':daid, 'adjustmentAmountRelative': str(amount)}
         if expiry_date != None:
             exp_date = client.DateTime(expiry_date  + '+0000')
             dedicated_account['expiryDate'] = exp_date
         dalist = [dedicated_account]
-        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455",
             "subscriberNumberNAI":2, "subscriberNumber": subno, "transactionCurrency": "CFA",'dedicatedAccountUpdateInformation': dalist}
         res = self.run_rpc_command(parameters, 'UpdateBalanceAndDate')
         return res[0][0]['responseCode']
@@ -132,10 +127,7 @@ class UcipClient:
 
     def get_user_details(self, subno):
         dict_response = {'response':-100, 'subno':subno}
-        isodatetimetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetimetime) +  '+0000')
-        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
-            "subscriberNumberNAI":2, "subscriberNumber": subno}
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "subscriberNumberNAI":2, "subscriberNumber": subno}
         res = self.run_rpc_command(parameters, 'GetAccountDetails')
         response_code = res[0][0]['responseCode']
         dict_response['response'] = response_code
@@ -153,10 +145,7 @@ class UcipClient:
     
     def get_offers(self, subno):
         dict_response = {'response':-100, 'subno':subno}
-        isodatetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetime) +  '+0000')
-        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
-            "offerRequestedTypeFlag": "11111111", "subscriberNumberNAI":2, "subscriberNumber": subno}
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "offerRequestedTypeFlag": "11111111", "subscriberNumberNAI":2, "subscriberNumber": subno}
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
         res = self.run_rpc_command(parameters, 'GetOffers')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0' # Turn to default
@@ -184,9 +173,7 @@ class UcipClient:
     
     def set_offer(self, subno, offer_id, offer_type=0, expiry_date=None):
         dict_response = {'response':-100, 'subno':subno}
-        isodatetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetime) +  '+0000')
-        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate, "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id, "offerType":offer_type}
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id, "offerType":offer_type}
         if expiry_date != None:
             if offer_type == OfferTypes['NORMAL']:
                 parameters['expiryDate'] = client.DateTime(expiry_date + '+0000')
@@ -201,10 +188,7 @@ class UcipClient:
     
     def delete_offer(self, subno, offer_id):
         dict_response = {'response':-100, 'subno':subno}
-        isodatetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetime) +  '+0000')
-        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
-            "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id}
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "subscriberNumberNAI":2, "subscriberNumber": subno, "offerID": offer_id}
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.2/1.0'
         res = self.run_rpc_command(parameters, 'DeleteOffer')
         self.headers['User-Agent'] = 'GPRSBUNDLE/4.0/1.0' # Turn to default
@@ -214,10 +198,7 @@ class UcipClient:
     
     def update_tempblock(self, subno, flag=True):
         dict_response = {'response':-100, 'subno':subno}
-        isodatetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetime) +  '+0000')
-        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
-            "subscriberNumberNAI":2, "subscriberNumber": subno, 'temporaryBlockedFlag': flag}
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "subscriberNumberNAI":2, "subscriberNumber": subno, 'temporaryBlockedFlag': flag}
         res = self.run_rpc_command(parameters, 'UpdateTemporaryBlocked')
         
         dict_response['response'] = res[0][0]['responseCode']
@@ -233,9 +214,7 @@ class UcipClient:
     
     def install_subscriber_sdp(self, subno, serv_class, is_blocked):
         dict_response = {'response':-100, 'subno':subno}
-        isodatetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetime) +  '+0000')
-        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455",
             "subscriberNumberNAI":2, "subscriberNumber": subno, "originOperatorID":"EveraldoMenout", "serviceClassNew": serv_class , 'temporaryBlockedFlag': is_blocked}
         res = self.run_rpc_command(parameters, 'InstallSubscriber')
         dict_response['response'] = res[0][0]['responseCode']
@@ -244,10 +223,7 @@ class UcipClient:
 
     def delete_subscriber_sdp(self, subno):
         dict_response = {'response':-100, 'subno':subno}
-        isodatetime = client.DateTime(time.time())
-        transdate = client.DateTime(str(isodatetime) +  '+0000')
-        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "originTimeStamp":transdate,
-            "subscriberNumberNAI":2, "subscriberNumber": subno, "originOperatorID":"EveraldoMenout"}
+        parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "subscriberNumberNAI":2, "subscriberNumber": subno, "originOperatorID":"EveraldoMenout"}
         res = self.run_rpc_command(parameters, 'DeleteSubscriber')
         dict_response['response'] = res[0][0]['responseCode']
         return dict_response
