@@ -145,6 +145,9 @@ class UcipClient:
             dict_response['isActive'] = res[0][0]['accountFlags']['activationStatusFlag']
             if (dict_response['isActive']):
                 dict_response['activationDate'] = res[0][0]['activationDate']
+            else:
+                dict_response['tempBlock'] = res[0][0]['temporaryBlockedFlag']
+
         return dict_response
 
     
