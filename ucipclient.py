@@ -129,16 +129,20 @@ class UcipClient:
         dict_response = {'response':-100, 'subno':subno}
         parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "subscriberNumberNAI":2, "subscriberNumber": subno}
         res = self.run_rpc_command(parameters, 'GetAccountDetails')
+        print(res)
         response_code = res[0][0]['responseCode']
         dict_response['response'] = response_code
         if response_code == 0 :
             dict_response['sc'] = res[0][0]['serviceClassCurrent']
             dict_response['languageId'] = res[0][0]['languageIDCurrent']
+            # dict_response['creditClear'] = True if res[0][0]['serviceFeePeriod'] <= 0 else False
+            # if dict_response['creditClear']:
+            #     dict_response['clearDate'] = res[0][0]['creditClearanceDate'].value
             dict_response['isActive'] = res[0][0]['accountFlags']['activationStatusFlag']
             if (dict_response['isActive']):
                 dict_response['activationDate'] = res[0][0]['activationDate'].value
-            else:
-                dict_response['tempBlock'] = res[0][0]['temporaryBlockedFlag']
+            # else:
+            #     dict_response['tempBlock'] = res[0][0]['temporaryBlockedFlag']
 
         return dict_response
 

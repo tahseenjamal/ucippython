@@ -22,8 +22,10 @@ if __name__ == '__main__':
     ucip.connect()
     #r = ucip.get_balance_date('966601471')
     #print(r)
-    r  = ucip.get_offers('966363636')
-    print(r)
+    numbers = ['966601202', '966601203', '966601208', '966601215']
+    for subno in numbers:
+        r  = ucip.get_offers(subno)
+        print(r)
     # r = ucip.set_offer('966601923', 317)
     # print(r)
     # r = ucip.delete_offer('966601923', 317)

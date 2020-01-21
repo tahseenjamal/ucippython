@@ -31,6 +31,7 @@ if (args['l'] == True):
      print("7 - Install_number_SDP         ==> prov.py -m 7 -p subno,serv_class,flag_temp_block")
      print("8 - Delete_number_SDP          ==> prov.py -m 8 -p subno")
      print("9 - Update_temp_block          ==> prov.py -m 9 -p subno,flag")
+     print("10 - Delete Offer              ==> prov.py -m 10 -p subno,offerId")
      sys.exit(0)
 ucip = ucipclient.UcipClient('10.100.2.179:83', 'gprs_bundle', 'gprs+2012')
 ucip.connect()
@@ -77,6 +78,11 @@ elif method_id == 9:
     if len_args == 2:
         flag = True if params[1] == 'true' else False
         print(ucip.update_tempblock(params[0], flag))
+    else:
+        print('Parameter syntax error : <subno,flag> expected')
+elif method_id == 10:
+    if len_args == 2:
+        print(ucip.delete_offer(params[0], int(params[1])))
     else:
         print('Parameter syntax error : <subno,flag> expected')
 else:

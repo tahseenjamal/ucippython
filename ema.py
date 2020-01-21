@@ -52,7 +52,7 @@ class Ema:
     def create_subscriber(self, subno, imsi, profile):
         return self.send_command(f"CREATE:HLRSUB:MSISDN,245{subno}:IMSI,{imsi}:PROFILE,{profile};")
     
-    def delete_subscriber(self, subno, imsi, profile):
+    def delete_subscriber(self, subno):
         return self.send_command(f"DELETE:HLRSUB:MSISDN,245{subno};")
 
     def remove_all_barring(self, subno):
@@ -74,19 +74,22 @@ class Ema:
     def close(self):
         self.logout()
         self.ema.close()
+        print("Logged out")
 
 
 if __name__ == "__main__":
-    server = Ema("10.195.5.7", 3300)
-    server.connect()
-    is_cononected = server.login("emamtngb", "EmaMtnBiss@u19")
-    numbers = ['966601471', '966601924','966601571','966601590','966601771', '966601923', '966002971', '966002972', '455244dfdf']
-    # numbers = ['966002972']
+    ema = Ema("10.195.5.7", 3300)
+    ema.connect()
+    is_cononected = ema.login("emamtngb", "EmaMtnBiss@u19")
+    numbers = ['966601471', '966601924','966601571','966601590','966601771', '966601923', '966002971', '966002972', '455244dfdf', '966601471', '966601924','966601571','966601590','966601771', '966601923', '966002971', '966002972', '455244dfdf']
+    # numbers = ['966655661']
     if is_cononected:
         for subno in numbers:
-            print(server.get_user_info(subno))
+            print(ema.get_user_info(subno))
+        # print(ema.delete_subscriber('966655661'))
+        # print(ema.create_subscriber('966655661', '632020105570318', 111))
     else:
         print("Not connected.")
     
-    print(server.remove_all_barring('966601923'))
-    server.close()
+    # print(server.remove_all_barring('966655661'))
+    ema.close()
