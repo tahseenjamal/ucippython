@@ -5,16 +5,16 @@ class Hlr:
 
     def __init__(self, host, username, password):
         self.host = host
-        self.username = username
-        self.password = password
+        self.username = username + "\r\n"
+        self.password = password + "\r\n"
         self.telnet = None
     
     def connect(self):
         self.telnet = telnetlib.Telnet(self.host, port=5000, timeout=20)
         self.telnet.read_until(b'USERCODE: ')
-        self.telnet.write('ITadmin\r\n'.encode())
+        self.telnet.write(self.username.encode())
         self.telnet.read_until(b'PASSWORD: ')
-        self.telnet.write('MtnBissau1\r\n'.encode())
+        self.telnet.write(self.password.encode())
         self.telnet.read_until(b'DOMAIN: ')
         self.telnet.write(b"\r\n")
         self.telnet.read_until(b'<')

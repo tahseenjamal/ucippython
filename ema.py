@@ -82,10 +82,11 @@ if __name__ == "__main__":
     ema.connect()
     is_cononected = ema.login("emamtngb", "EmaMtnBiss@u19")
     numbers = ['966601471', '966601924','966601571','966601590','966601771', '966601923', '966002971', '966002972', '455244dfdf', '966601471', '966601924','966601571','966601590','966601771', '966601923', '966002971', '966002972', '455244dfdf']
-    # numbers = ['966655661']
+    # numbers = ['965322564']
     if is_cononected:
         for subno in numbers:
             print(ema.get_user_info(subno))
+            # print(ema.remove_all_barring(subno))
         # print(ema.delete_subscriber('966655661'))
         # print(ema.create_subscriber('966655661', '632020105570318', 111))
     else:

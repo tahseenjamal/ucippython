@@ -94,8 +94,9 @@ class UcipClient:
         dict_response['response'] = response_code
         if response_code == 0 :
             dict_response['ma'] =  int(res[0][0]['accountValue1'])/100
-            davalue =  self.get_da_amount2(res[0][0]['dedicatedAccountInformation'], ded_account_id)
-            dict_response['da'] = int(davalue)
+            if "dedicatedAccountInformation" in res[0][0]:
+                davalue =  self.get_da_amount2(res[0][0]['dedicatedAccountInformation'], ded_account_id)
+                dict_response['da'] = int(davalue)
         return dict_response
     
 
@@ -129,20 +130,24 @@ class UcipClient:
         dict_response = {'response':-100, 'subno':subno}
         parameters =  {"originNodeType": "EXT", "originHostName":"SHAREDACCOUNT", "originTransactionID":"123455", "subscriberNumberNAI":2, "subscriberNumber": subno}
         res = self.run_rpc_command(parameters, 'GetAccountDetails')
-        print(res)
+        #print(res)
         response_code = res[0][0]['responseCode']
         dict_response['response'] = response_code
         if response_code == 0 :
             dict_response['sc'] = res[0][0]['serviceClassCurrent']
             dict_response['languageId'] = res[0][0]['languageIDCurrent']
-            # dict_response['creditClear'] = True if res[0][0]['serviceFeePeriod'] <= 0 else False
-            # if dict_response['creditClear']:
-            #     dict_response['clearDate'] = res[0][0]['creditClearanceDate'].value
-            dict_response['isActive'] = res[0][0]['accountFlags']['activationStatusFlag']
-            if (dict_response['isActive']):
+            activation_status = res[0][0]['accountFlags']['activationStatusFlag']
+            #print(res[0][0]['accountFlags']['supervisionPeriodExpiryFlag'])
+            if activation_status and "supervisionPeriodExpiryFlag" in res[0][0]['accountFlags'] and res[0][0]['accountFlags']['supervisionPeriodExpiryFlag']:
+                dict_response['status'] = "CreditCleared"
                 dict_response['activationDate'] = res[0][0]['activationDate'].value
-            # else:
-            #     dict_response['tempBlock'] = res[0][0]['temporaryBlockedFlag']
+            elif activation_status:
+                dict_response['status'] = "Active"
+                dict_response['activationDate'] = res[0][0]['activationDate'].value
+            else:
+                dict_response['status'] = "Installed"
+            if "temporaryBlockedFlag" in res[0][0]:
+                dict_response['tempBlock'] = res[0][0]['temporaryBlockedFlag']
 
         return dict_response
 

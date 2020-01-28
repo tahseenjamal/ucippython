@@ -39,7 +39,14 @@ method_id = args['method_id']
 params = args['parameters'].split(",")
 len_args = len(params)
 if method_id == 1:
-     print(ucip.get_user_details(params[0]))
+    res = ucip.get_user_details(params[0])
+    if res['response'] == 0:
+        print("\nsubno: " + res['subno'])
+        print(f"{'Subno':<10}{'Service Class':<15}{'Language':<10}{'Status':<14}{'ActivationDate':<23}{'TempBlock':<10}")
+        print("-"*82)
+        activation_date = res['activationDate'] if 'activationDate' in res else "None"
+        tempblock = "Yes" if 'tempBlock' in res and res['tempBlock']  else "No"
+        print(f"{res['subno']:<10}{res['sc']:<15}{res['languageId']:<10}{res['status']:<14}{activation_date:<23}{tempblock:<10}")
 elif method_id == 2:
     result = ucip.get_offers(params[0])
     if result['response'] == 0:
@@ -51,7 +58,14 @@ elif method_id == 2:
     else:
         print("Error. Response code:",result['response'])
 elif method_id == 3:
-    print(ucip.get_balance_date(params[0], int(params[1])))
+    ded_account_id = int(params[1])
+    res =ucip.get_balance_date(params[0], ded_account_id)
+    if res['response'] == 0:
+        print("\nSubno:" + res['subno'])
+        print("DedAccountID: " + str(ded_account_id))
+        print(f"{'MainAccount':<12}{'DedAccount':<10}")
+        print("-"*34)
+        print(f"{res['ma']:<12}{res['da']:<10}")
 elif method_id == 4:
     print(ucip.update_balance_date(params[0], int(params[1])))
 elif method_id == 5:

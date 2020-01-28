@@ -35,19 +35,19 @@ class Minsat:
         self.minsat.close()
 
 if __name__ == '__main__':
-    server = Minsat('10.195.2.222', 7020)
-    server.connect()
-    if (server.login('minsat', 'Minsat@2019')):
-        reply = server.send_command(
+    minsat = Minsat('10.195.2.222', 7020)
+    minsat.connect()
+    if (minsat.login('minsat', 'Minsat@2019')):
+        reply = minsat.send_command(
             'GET:ACCOUNTINFORMATION:2:SubscriberNumber,245966002971;')
         print(reply, end='')
-        reply = server.send_command(
+        reply = minsat.send_command(
             'GET:ACCOUNTINFORMATION:2:SubscriberNumber,245966601471;')
         print(reply, end='')
-        reply = server.send_command(
+        reply = minsat.send_command(
             'GET:ACCOUNTINFORMATION:2:SubscriberNumber,245966601771;')
         print(reply, end='')
-        server.close()
+        minsat.close()
     else:
-        print("You're not connect to " + str(server.ip_port))
+        print("You're not connect to " + str(minsat.ip_port))
 
