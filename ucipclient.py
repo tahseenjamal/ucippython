@@ -20,7 +20,7 @@ class UcipClient:
 
     def __init__(self, hostport, username, password):
         credential = f'{username}:{password}'
-        auth =  base64.standard_b64encode(credential.encode())
+        auth =  base64.standard_b64encode(credential.encode()),decode('utf-8')
         self.hostport = hostport
         self.username = username
         self.password = password
